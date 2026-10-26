@@ -1,0 +1,63 @@
+---
+title: "A Coffee Lover's World Tour"
+author: "Your Name"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output:
+  html_document:
+    theme: cosmo
+    toc: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(leaflet)
+```
+
+**Document created on: `r format(Sys.Date(), '%A, %B %d, %Y')`**
+
+Coffee grows in a belt around the equator. Below is an interactive map of
+famous coffee-growing regions. Click a marker for details, use the layer
+control (top right) to switch base maps or hide the rings, and scroll to zoom.
+
+```{r map}
+coffee <- data.frame(
+  name = c("Yirgacheffe, Ethiopia", "Antigua, Guatemala", "Huila, Colombia",
+           "Kona, Hawaii, USA", "Chikmagalur, India", "Sumatra, Indonesia",
+           "Nyeri, Kenya", "Minas Gerais, Brazil"),
+  lat  = c(6.16, 14.56, 2.53, 19.64, 13.32, 3.59, -0.42, -18.51),
+  lng  = c(38.20, -90.73, -75.52, -155.99, 75.77, 98.67, 36.95, -44.55),
+  note = c("Birthplace of coffee; floral and citrusy cups.",
+           "Volcanic soil gives a chocolatey, smoky profile.",
+           "Sweet, balanced, caramel notes.",
+           "Rich volcanic slopes; small premium farms.",
+           "Shade-grown beans in the Western Ghats.",
+           "Earthy, full-bodied, wet-hulled beans.",
+           "Bright, wine-like acidity, blackcurrant notes.",
+           "World's largest coffee producer by volume."),
+  stringsAsFactors = FALSE
+)
+
+cup_icon <- makeAwesomeIcon(icon = "coffee", library = "fa",
+                            markerColor = "darkred", iconColor = "white")
+
+leaflet(coffee, width = "100%", height = 520) %>%
+  addProviderTiles(providers$CartoDB.Positron, group = "Light") %>%
+  addProviderTiles(providers$OpenStreetMap, group = "Street") %>%
+  addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>%
+  addPolylines(lng = c(-180, 180), lat = c(0, 0), color = "#8B4513",
+               weight = 2, dashArray = "6", group = "Equator") %>%
+  addCircleMarkers(~lng, ~lat, radius = 14, color = "#6F4E37",
+                   fillColor = "#C8A27A", fillOpacity = 0.35,
+                   group = "Rings") %>%
+  addAwesomeMarkers(~lng, ~lat, icon = cup_icon, label = ~name,
+                    popup = ~paste0("<b>", name, "</b><br>", note),
+                    group = "Regions") %>%
+  addLayersControl(baseGroups = c("Light", "Street", "Satellite"),
+                   overlayGroups = c("Regions", "Rings", "Equator"),
+                   options = layersControlOptions(collapsed = FALSE)) %>%
+  addMiniMap(toggleDisplay = TRUE, position = "bottomleft") %>%
+  addScaleBar(position = "bottomright") %>%
+  setView(lng = 20, lat = 5, zoom = 2)
+```
+
+*Map built with the R `leaflet` package. Tiles by CARTO, OpenStreetMap, and Esri.*
